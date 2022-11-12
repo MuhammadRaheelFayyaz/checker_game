@@ -1,7 +1,7 @@
 .main {
   display: flex;
   flex-direction: column;
-  justify-content:space-around;
+  justify-content:flex-start;
   align-items: center;
   height: 100vh;
   width: 100%;
@@ -52,8 +52,22 @@ background-color: greenyellow;
 .lockPiece{
   background-color:  yellow;
 }
+.selectedPiece{
+  background-color: rgb(226, 76, 76);
+}
 .king{
   font-size: 18px;
   font-weight: 600;
   color: black;
 }
+
+@media screen and (max-width: 480px) {
+  .main{
+    justify-content: flex-start;
+  }
+  .whiteCol, .greyCol{
+    width: 40px;
+    height: 40px;
+  }
+}
+

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
-// import App from './App';
-let initialBoard = [
+
+const initialBoard = [
   [0, -1, 0, -1, 0, -1, 0, -1],
   [-1, 0, -1, 0, -1, 0, -1, 0],
   [0, -1, 0, -1, 0, -1, 0, -1],
@@ -77,14 +77,14 @@ const App = () => {
     if (player === -1) {
       if (
         nextRow &&
-        nextRow[colIndex - 1] === 1 &&
+        (nextRow[colIndex - 1] === 1 ||nextRow[colIndex - 1] === 2 )&&
         secondNextRow &&
         secondNextRow[colIndex - 2] === 0
       ) {
         tempNextMove = [...tempNextMove, [rowIndex + 2, colIndex - 2]];
       } else if (
         nextRow &&
-        nextRow[colIndex + 1] === 1 &&
+        (nextRow[colIndex + 1] === 1 ||nextRow[colIndex + 1] === 2) &&
         secondNextRow &&
         secondNextRow[colIndex + 2] === 0
       ) {
@@ -94,14 +94,14 @@ const App = () => {
     if (player === 1) {
       if (
         nextRow &&
-        nextRow[colIndex - 1] === -1 &&
+        (nextRow[colIndex - 1] === -1 ||nextRow[colIndex - 1] === -2) &&
         secondNextRow &&
         secondNextRow[colIndex - 2] === 0
       ) {
         tempNextMove = [...tempNextMove, [rowIndex + 2, colIndex - 2]];
       } else if (
         nextRow &&
-        nextRow[colIndex + 1] === -1 &&
+        (nextRow[colIndex + 1] === -1|| nextRow[colIndex + 1] === -2) &&
         secondNextRow &&
         secondNextRow[colIndex + 2] === 0
       ) {
@@ -117,14 +117,14 @@ const App = () => {
     if (player === -1) {
       if (
         previousRow &&
-        previousRow[colIndex - 1] === 1 &&
+        (previousRow[colIndex - 1] === 1 ||previousRow[colIndex - 1] === 2) &&
         secondPrevioustRow &&
         secondPrevioustRow[colIndex - 2] === 0
       ) {
         tempNextMove = [...tempNextMove, [rowIndex - 2, colIndex - 2]];
       } else if (
         previousRow &&
-        previousRow[colIndex + 1] === 1 &&
+        (previousRow[colIndex + 1] === 1 || previousRow[colIndex + 1] === 2) &&
         secondPrevioustRow &&
         secondPrevioustRow[colIndex + 2] === 0
       ) {
@@ -134,14 +134,14 @@ const App = () => {
     if (player === 1) {
       if (
         previousRow &&
-        previousRow[colIndex - 1] === -1 &&
+        (previousRow[colIndex - 1] === -1 || previousRow[colIndex - 1] === -2) &&
         secondPrevioustRow &&
         secondPrevioustRow[colIndex - 2] === 0
       ) {
         tempNextMove = [...tempNextMove, [rowIndex - 2, colIndex - 2]];
       } else if (
         previousRow &&
-        previousRow[colIndex + 1] === -1 &&
+        (previousRow[colIndex + 1] === -1 || previousRow[colIndex + 1] === -2 )  &&
         secondPrevioustRow &&
         secondPrevioustRow[colIndex + 2] === 0
       ) {
@@ -155,34 +155,29 @@ const App = () => {
     //-1 blue, 1 black
     let tempNextMove = [];
     const currentValue = board[i][j];
-    let check = false;
     if (player === -1 && currentValue === -1) {
       tempNextMove = selectSecondNextRow(i, j, tempNextMove);
-      if(tempNextMove.length===0)
-      tempNextMove = selectNextRow(i, j, tempNextMove);
-      check = true;
+      if (tempNextMove.length === 0)
+        tempNextMove = selectNextRow(i, j, tempNextMove);
     } else if (player === 1 && currentValue === 1) {
       tempNextMove = selectSecondPreviousRow(i, j, tempNextMove);
-      if(tempNextMove.length===0)
-      tempNextMove = selectPreviousRow(i, j, tempNextMove);
-      check = true;
+      if (tempNextMove.length === 0)
+        tempNextMove = selectPreviousRow(i, j, tempNextMove);
     } else if (
       (player === -1 && currentValue === -2) ||
       (player === 1 && currentValue === 2)
     ) {
       tempNextMove = selectSecondNextRow(i, j, tempNextMove);
       tempNextMove = selectSecondPreviousRow(i, j, tempNextMove);
-      // if(tempNextMove.length===0)
-      tempNextMove = selectNextRow(i, j, tempNextMove);
-      // if(tempNextMove.length===0)
-      tempNextMove = selectPreviousRow(i, j, tempNextMove);
-      check = true;
+      if (tempNextMove.length === 0) {
+        tempNextMove = selectNextRow(i, j, tempNextMove);
+        tempNextMove = selectPreviousRow(i, j, tempNextMove);
+      }
     }
 
-    if (check) {
+    if (tempNextMove.length > 0) {
       setSelectedPiece([i, j]);
       setNextMove(tempNextMove);
-      setLockPiece([[i, j]]);
     }
   };
 
@@ -191,12 +186,6 @@ const App = () => {
     const index = JSON.stringify(nextMove).indexOf(current);
     return index !== -1;
   };
-
-  useEffect(() => {
-    if (selectedPiece.length > 0) {
-      setLockPiece([selectedPiece]);
-    }
-  }, [selectedPiece]);
 
   const isKing = () => {
     const itrateCol = (rowIndex) => {
@@ -211,6 +200,7 @@ const App = () => {
         }
         colIndex++;
       }
+      setBoard(tempBoard);
     };
     itrateCol(0);
     itrateCol(7);
@@ -223,7 +213,13 @@ const App = () => {
   const isLockPiece = (i, j) => {
     const current = JSON.stringify([i, j]);
     const index = JSON.stringify(lockPiece).indexOf(current);
-    return board[i][j] === player && index !== -1;
+    return index !== -1;
+  };
+
+  const isSelctedPiece = (i, j) => {
+    const current = JSON.stringify([i, j]);
+    const index = JSON.stringify(selectedPiece).indexOf(current);
+    return index !== -1;
   };
 
   const move = (i, j) => {
@@ -265,16 +261,39 @@ const App = () => {
   };
 
   const whenMoveDone = (i, j) => {
+    const currentValue = board[i][j];
     if (player === -1) {
       //blue move
       if (
-        (board[i + 1] &&
-          board[i + 1][j - 1] === 1 &&
+        currentValue === -1 &&
+        ((board[i + 1] &&
+          (board[i + 1][j - 1] === 1 || board[i + 1][j - 1] === 2) &&
           board[i + 2] &&
           board[i + 2][j - 2] === 0) ||
-        (board[i + 1] &&
-          board[i + 1][j + 1] === 1 &&
-          board[i + 2] & (board[i + 2][j + 2] === 0))
+          (board[i + 1] &&
+            (board[i + 1][j + 1] === 1 || board[i + 1][j + 1] === 2) &&
+            board[i + 2] &&
+            board[i + 2][j + 2] === 0))
+      ) {
+        selectToMove(i, j);
+      } else if (
+        currentValue === -2 &&
+        ((board[i + 1] &&
+          (board[i + 1][j - 1] === 1 || board[i + 1][j - 1] === 2) &&
+          board[i + 2] &&
+          board[i + 2][j - 2] === 0) ||
+          (board[i + 1] &&
+            (board[i + 1][j + 1] === 1 || board[i + 1][j + 1] === 2) &&
+            board[i + 2] &&
+            board[i + 2][j + 2] === 0) ||
+          (board[i - 1] &&
+            (board[i - 1][j - 1] === 1 || board[i - 1][j - 1] === 2) &&
+            board[i - 2] &&
+            board[i - 2][j - 2] === 0) ||
+          (board[i - 1] &&
+            (board[i - 1][j + 1] === 1 || board[i - 1][j + 1] === 2) &&
+            board[i + 2] &&
+            board[i - 2][j - 2] === 0))
       ) {
         selectToMove(i, j);
       } else {
@@ -284,14 +303,35 @@ const App = () => {
     if (player === 1) {
       //white move
       if (
-        (board[i - 1] &&
-          board[i - 1][j + 1] === -1 &&
+        currentValue === 1 &&
+        ((board[i - 1] &&
+          (board[i - 1][j + 1] === -1 || board[i - 1][j + 1] === -2) &&
           board[i - 2] &&
           board[i - 2][j + 2] === 0) ||
-        (board[i - 1] &&
-          board[i - 1][j - 1] === -1 &&
-          board[i - 2] &&
-          board[i - 2][j - 2] === 0)
+          (board[i - 1] &&
+            (board[i - 1][j - 1] === -1 || board[i - 1][j - 1] === -2) &&
+            board[i - 2] &&
+            board[i - 2][j - 2] === 0))
+      ) {
+        selectToMove(i, j);
+      } else if (
+        currentValue === 2 &&
+        ((board[i + 1] &&
+          (board[i + 1][j - 1] === -1 || board[i + 1][j - 1] === -2) &&
+          board[i + 2] &&
+          board[i + 2][j - 2] === 0) ||
+          (board[i + 1] &&
+            (board[i + 1][j + 1] === -1 || board[i + 1][j + 1] === -2) &&
+            board[i + 2] &&
+            board[i + 2][j + 2] === 0) ||
+          (board[i - 1] &&
+            (board[i - 1][j - 1] === -1 || board[i - 1][j - 1] === -2) &&
+            board[i - 2] &&
+            board[i - 2][j - 2] === 0) ||
+          (board[i - 1] &&
+            (board[i - 1][j + 1] === -1 || board[i - 1][j + 1] === -2) &&
+            board[i + 2] &&
+            board[i - 2][j - 2] === 0))
       ) {
         selectToMove(i, j);
       } else {
@@ -305,52 +345,91 @@ const App = () => {
     let tempLock = [];
     while (i <= 7) {
       let j = 0;
-      let check = false;
       while (j <= 7) {
-        if (board[i][j] !== 0) {
-          if (player === 1) {
+        const currentValue = board[i][j];
+        if (currentValue !== 0) {
+          if (player === 1 && currentValue == -1) {
             if (
               board[i + 1] &&
-              board[i + 1][j - 1] === 1 &&
+              (board[i + 1][j - 1] === 1 || board[i + 1][j - 1] === 2) &&
               board[i + 2] &&
               board[i + 2][j - 2] === 0
             ) {
               tempLock = [...tempLock, [i, j]];
-              check = true;
             } else if (
               board[i + 1] &&
-              board[i + 1][j + 1] === 1 &&
+              (board[i + 1][j + 1] === 1 || board[i + 1][j + 1] === 2) &&
               board[i + 2] &&
               board[i + 2][j + 2] === 0
             ) {
               tempLock = [...tempLock, [i, j]];
-              check = true;
             }
-          } else if (player === -1) {
+          }
+          if (player === -1 && currentValue === 1) {
             if (
               board[i - 1] &&
-              board[i - 1][j + 1] === -1 &&
+              (board[i - 1][j + 1] === -1 || board[i - 1][j + 1] === -2) &&
               board[i - 2] &&
               board[i - 2][j + 2] === 0
             ) {
               tempLock = [...tempLock, [i, j]];
-              check = true;
             } else if (
               board[i - 1] &&
-              board[i - 1][j - 1] === -1 &&
+              (board[i - 1][j - 1] === -1 || board[i - 1][j - 1] === -2) &&
               board[i - 2] &&
               board[i - 2][j - 2] === 0
             ) {
               tempLock = [...tempLock, [i, j]];
-              check = true;
+            }
+          }
+          if (player === 1 && currentValue === -2) {
+            if (
+              (board[i + 1] &&
+                (board[i + 1][j - 1] === 1 || board[i + 1][j - 1] === 2) &&
+                board[i + 2] &&
+                board[i + 2][j - 2] === 0) ||
+              (board[i + 1] &&
+                (board[i + 1][j + 1] === 1 || board[i + 1][j + 1] === 2) &&
+                board[i + 2] &&
+                board[i + 2][j + 2] === 0) ||
+              (board[i - 1] &&
+                (board[i - 1][j - 1] === 1 || board[i - 1][j - 1] === 2) &&
+                board[i - 2] &&
+                board[i - 2][j - 2] === 0) ||
+              (board[i - 1] &&
+                (board[i - 1][j + 1] === 1 || board[i - 1][j + 1] === 2) &&
+                board[i - 2] &&
+                board[i - 2][j + 2] === 0)
+            ) {
+              tempLock = [...tempLock, [i, j]];
+            }
+          }
+          if (player === -1 && currentValue === 2) {
+            if (
+              (board[i + 1] &&
+                (board[i + 1][j - 1] === -1 || board[i + 1][j - 1] === -2) &&
+                board[i + 2] &&
+                board[i + 2][j - 2] === 0) ||
+              (board[i + 1] &&
+                (board[i + 1][j + 1] === -1 || board[i + 1][j + 1] === -2) &&
+                board[i + 2] &&
+                board[i + 2][j + 2] === 0) ||
+              (board[i - 1] &&
+                (board[i - 1][j - 1] === -1 || board[i - 1][j - 1] === -2) &&
+                board[i - 2] &&
+                board[i - 2][j - 2] === 0) ||
+              (board[i - 1] &&
+                (board[i - 1][j + 1] === -1 || board[i - 1][j + 1] === -2) &&
+                board[i - 2] &&
+                board[i - 2][j + 2] === 0)
+            ) {
+              tempLock = [...tempLock, [i, j]];
             }
           }
         }
         j++;
       }
-      if (check) {
-        break;
-      }
+
       i++;
     }
     setLockPiece(tempLock);
@@ -360,11 +439,11 @@ const App = () => {
     if (isNextMove(rowIndex, colIndex)) {
       move(rowIndex, colIndex);
     } else {
-      if ([rowIndex, colIndex].toString() === lockPiece.toString()) {
-        // setPlayer(player === 1 ? -1 : 1);
+      const tempLock = [...lockPiece];
+      if (tempLock.toString().includes([rowIndex, colIndex].toString())) {
         selectToMove(rowIndex, colIndex);
       } else {
-        selectToMove(rowIndex, colIndex);
+        if (lockPiece.length === 0) selectToMove(rowIndex, colIndex);
       }
     }
   };
@@ -386,6 +465,10 @@ const App = () => {
                             isNextMove(rowIndex, colIndex) ? "nextMove" : ""
                           } ${
                             isLockPiece(rowIndex, colIndex) ? "lockPiece" : ""
+                          } ${
+                            isSelctedPiece(rowIndex, colIndex)
+                              ? "selectedPiece"
+                              : ""
                           }`}
                           onClick={() => handleColClick(rowIndex, colIndex)}
                         >
@@ -401,6 +484,10 @@ const App = () => {
                             isNextMove(rowIndex, colIndex) ? "nextMove" : ""
                           }  ${
                             isLockPiece(rowIndex, colIndex) ? "lockPiece" : ""
+                          } ${
+                            isSelctedPiece(rowIndex, colIndex)
+                              ? "selectedPiece"
+                              : ""
                           }`}
                           onClick={() => handleColClick(rowIndex, colIndex)}
                         >
@@ -420,6 +507,10 @@ const App = () => {
                             isNextMove(rowIndex, colIndex) ? "nextMove" : ""
                           }  ${
                             isLockPiece(rowIndex, colIndex) ? "lockPiece" : ""
+                          } ${
+                            isSelctedPiece(rowIndex, colIndex)
+                              ? "selectedPiece"
+                              : ""
                           }`}
                           onClick={() => handleColClick(rowIndex, colIndex)}
                         >
@@ -435,6 +526,10 @@ const App = () => {
                             isNextMove(rowIndex, colIndex) ? "nextMove" : ""
                           } ${
                             isLockPiece(rowIndex, colIndex) ? "lockPiece" : ""
+                          } ${
+                            isSelctedPiece(rowIndex, colIndex)
+                              ? "selectedPiece"
+                              : ""
                           }`}
                           onClick={() => handleColClick(rowIndex, colIndex)}
                         >
@@ -463,7 +558,3 @@ root.render(
     <App />
   </React.StrictMode>
 );
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(1))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
